@@ -11,10 +11,14 @@ export default function ChatPanel() {
   const { activeChatId, messages, setMessages } = useChatStore();
 
   useEffect(() => {
-    if (activeChatId) {
-      fetchMessages(activeChatId).then((res) => setMessages(res.messages));
-    }
-  }, [activeChatId]);
+    if (!activeChatId) return;
+
+    fetchMessages(activeChatId).then((res) => {
+      // soporta ambos formatos: array directo o {messages: [...]}
+      const data = Array.isArray(res) ? res : res.messages;
+      setMessages(data || []);
+    });
+  }, [activeChatId, setMessages]);
 
   if (!activeChatId) {
     return <div className="flex-1 p-10">Selecciona o crea un chat</div>;
@@ -28,8 +32,8 @@ export default function ChatPanel() {
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {messages.map((m) => (
-          <div key={m.id} className="mb-3">
+        {messages.map((m, idx) => (
+          <div key={m.id || idx} className="mb-3">
             <b>{m.role}:</b> {m.content}
           </div>
         ))}
